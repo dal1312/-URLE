@@ -1,0 +1,4 @@
+source_id,title,year,institution,resource_type,status,notes
+SRC_GREG_038,Catasto Gregoriano - Forli 038,ca. XIX sec.,Archivio di Stato di Roma / IMAGO,JP2/IIPImage,VERIFIED_URL_IN_CHAT,Alta risoluzione a piramide/tasselli
+SRC_FORLI_1873,Carta Topografica della Citta di Forli,1873,da verificare puntualmente,Historical map,REVIEW_REQUIRED,Metadati bibliografici da validare su fonte primaria
+SRC_CTR_RER,CTR moderna Forli,moderna,Regione Emilia-Romagna / Provincia FC,TIFF+TFW+PRJ,VERIFIED_LOCAL_DATA,EPSG:25832

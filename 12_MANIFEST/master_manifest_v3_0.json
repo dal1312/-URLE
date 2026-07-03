@@ -1,0 +1,71 @@
+{
+  "project": "Forli Digital Twin",
+  "version": "3.0 Master Consolidation",
+  "generated_at": "2026-07-03T22:20:44.601218",
+  "crs_working": "EPSG:25832",
+  "inventory_records": 133,
+  "copied_core_artifacts": 10,
+  "status_legend": [
+    "VERIFIED",
+    "GENERATED",
+    "PRELIMINARY",
+    "REVIEW_REQUIRED",
+    "MISSING"
+  ],
+  "core_state": {
+    "historical_research": "REVIEW_REQUIRED",
+    "gregorian_map_038": "VERIFIED_URL_IN_CHAT",
+    "historical_rasters_4": "GENERATED",
+    "ctr_7_tiles_geotiff": "GENERATED",
+    "ctr_vrt": "GENERATED",
+    "gcp_candidates_32": "GENERATED",
+    "gcp_real_targets": "REVIEW_REQUIRED",
+    "historical_final_geotiffs": "MISSING",
+    "temporal_model": "PRELIMINARY",
+    "vector_layers": "MISSING",
+    "web_workbench": "GENERATED",
+    "final_digital_twin": "MISSING"
+  },
+  "copied": [
+    {
+      "source": "Forli_DigitalTwin_v2_5_CTR_GCP/01_CTR_MOSAIC/CTR_7tiles_EPSG25832.vrt",
+      "destination": "03_CTR_MODERNA/CTR_7tiles_EPSG25832.vrt"
+    },
+    {
+      "source": "Forli_DigitalTwin_v2_5_CTR_GCP/01_CTR_MOSAIC/CTR_tile_index_EPSG25832.geojson",
+      "destination": "03_CTR_MODERNA/CTR_tile_index_EPSG25832.geojson"
+    },
+    {
+      "source": "Forli_DigitalTwin_v2_6_GCP_Matching/02_GCP_REVIEW/GCP_32_review_v2_6.csv",
+      "destination": "04_GCP_GEOREF/GCP_32_review_v2_6.csv"
+    },
+    {
+      "source": "Forli_DigitalTwin_v2_7_PointMatching_Workbench/01_GCP/GCP_point_matching_v2_7.csv",
+      "destination": "04_GCP_GEOREF/GCP_point_matching_v2_7.csv"
+    },
+    {
+      "source": "Forli_DigitalTwin_v2_7_PointMatching_Workbench/00_WEB/index.html",
+      "destination": "08_WEB_APP/index.html"
+    },
+    {
+      "source": "Forli_DigitalTwin_v2_7_PointMatching_Workbench/00_WEB/data/point_matching_v2_7.json",
+      "destination": "08_WEB_APP/point_matching_v2_7.json"
+    },
+    {
+      "source": "CT_FO004_042.jpg",
+      "destination": "02_RASTER_STORICI/CT_FO004_042.jpg"
+    },
+    {
+      "source": "01CT_FO004_043.jpg",
+      "destination": "02_RASTER_STORICI/01CT_FO004_043.jpg"
+    },
+    {
+      "source": "CT_FO004_044.jpg",
+      "destination": "02_RASTER_STORICI/CT_FO004_044.jpg"
+    },
+    {
+      "source": "CT_FO004_045.jpg",
+      "destination": "02_RASTER_STORICI/CT_FO004_045.jpg"
+    }
+  ]
+}

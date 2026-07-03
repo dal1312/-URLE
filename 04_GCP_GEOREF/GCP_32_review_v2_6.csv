@@ -1,0 +1,33 @@
+sheet_id,gcp_id,candidate_name,source_x,source_y,decision,target_easting_epsg25832,target_northing_epsg25832,target_tile,match_method,confidence,residual_px,residual_m,note
+FO004_042,FO004_042_P01,Porta Schiavonia / area porta,300,1115,REVIEW,,,,MANUAL_SEMANTIC_REQUIRED,A,,,Candidato ricostruito dal workbench v2.4; verificare corrispondenza omologa univoca storico-CTR.
+FO004_042,FO004_042_P02,Via San Pietro / nodo ovest,580,790,REVIEW,,,,MANUAL_SEMANTIC_REQUIRED,B,,,Candidato ricostruito dal workbench v2.4; verificare corrispondenza omologa univoca storico-CTR.
+FO004_042,FO004_042_P03,Convento/complesso centrale,1130,560,REVIEW,,,,MANUAL_SEMANTIC_REQUIRED,B,,,Candidato ricostruito dal workbench v2.4; verificare corrispondenza omologa univoca storico-CTR.
+FO004_042,FO004_042_P04,Via Valverde / incrocio,1510,820,REVIEW,,,,MANUAL_SEMANTIC_REQUIRED,B,,,Candidato ricostruito dal workbench v2.4; verificare corrispondenza omologa univoca storico-CTR.
+FO004_042,FO004_042_P05,Borgo Schiavonia / incrocio,735,1310,REVIEW,,,,MANUAL_SEMANTIC_REQUIRED,B,,,Candidato ricostruito dal workbench v2.4; verificare corrispondenza omologa univoca storico-CTR.
+FO004_042,FO004_042_P06,Asse superiore mura / spigolo,850,235,REVIEW,,,,MANUAL_SEMANTIC_REQUIRED,C,,,Candidato ricostruito dal workbench v2.4; verificare corrispondenza omologa univoca storico-CTR.
+FO004_042,FO004_042_P07,Incrocio urbano sud-ovest,1180,1510,REVIEW,,,,MANUAL_SEMANTIC_REQUIRED,C,,,Candidato ricostruito dal workbench v2.4; verificare corrispondenza omologa univoca storico-CTR.
+FO004_042,FO004_042_P08,Nodo stradale est / corso,1850,950,REVIEW,,,,MANUAL_SEMANTIC_REQUIRED,C,,,Candidato ricostruito dal workbench v2.4; verificare corrispondenza omologa univoca storico-CTR.
+FO004_043,FO004_043_P01,Rocca di Ravaldino / opera fortificata,1340,1870,REVIEW,,,,MANUAL_SEMANTIC_REQUIRED,A,,,Candidato ricostruito dal workbench v2.4; verificare corrispondenza omologa univoca storico-CTR.
+FO004_043,FO004_043_P02,Porta Ravaldino / asse uscita,1120,1550,REVIEW,,,,MANUAL_SEMANTIC_REQUIRED,B,,,Candidato ricostruito dal workbench v2.4; verificare corrispondenza omologa univoca storico-CTR.
+FO004_043,FO004_043_P03,San Domenico / complesso,1245,420,REVIEW,,,,MANUAL_SEMANTIC_REQUIRED,A,,,Candidato ricostruito dal workbench v2.4; verificare corrispondenza omologa univoca storico-CTR.
+FO004_043,FO004_043_P04,Piazza Sant'Agostino / area,1110,105,REVIEW,,,,MANUAL_SEMANTIC_REQUIRED,B,,,Candidato ricostruito dal workbench v2.4; verificare corrispondenza omologa univoca storico-CTR.
+FO004_043,FO004_043_P05,Via Caterina Sforza / asse,900,970,REVIEW,,,,MANUAL_SEMANTIC_REQUIRED,B,,,Candidato ricostruito dal workbench v2.4; verificare corrispondenza omologa univoca storico-CTR.
+FO004_043,FO004_043_P06,Mura ovest / saliente,430,780,REVIEW,,,,MANUAL_SEMANTIC_REQUIRED,C,,,Candidato ricostruito dal workbench v2.4; verificare corrispondenza omologa univoca storico-CTR.
+FO004_043,FO004_043_P07,Nodo Borgo / incrocio sud-est,1515,1275,REVIEW,,,,MANUAL_SEMANTIC_REQUIRED,C,,,Candidato ricostruito dal workbench v2.4; verificare corrispondenza omologa univoca storico-CTR.
+FO004_043,FO004_043_P08,Parcella aperta centrale / incrocio,820,610,REVIEW,,,,MANUAL_SEMANTIC_REQUIRED,C,,,Candidato ricostruito dal workbench v2.4; verificare corrispondenza omologa univoca storico-CTR.
+FO004_044,FO004_044_P01,Barriera San Pietro / area porta,1450,1040,REVIEW,,,,MANUAL_SEMANTIC_REQUIRED,A,,,Candidato ricostruito dal workbench v2.4; verificare corrispondenza omologa univoca storico-CTR.
+FO004_044,FO004_044_P02,Borgo San Pietro / incrocio,1190,1290,REVIEW,,,,MANUAL_SEMANTIC_REQUIRED,B,,,Candidato ricostruito dal workbench v2.4; verificare corrispondenza omologa univoca storico-CTR.
+FO004_044,FO004_044_P03,Piazza Garibaldi / area,330,1050,REVIEW,,,,MANUAL_SEMANTIC_REQUIRED,B,,,Candidato ricostruito dal workbench v2.4; verificare corrispondenza omologa univoca storico-CTR.
+FO004_044,FO004_044_P04,Mura settentrionali / tratto rettilineo,850,120,REVIEW,,,,MANUAL_SEMANTIC_REQUIRED,B,,,Candidato ricostruito dal workbench v2.4; verificare corrispondenza omologa univoca storico-CTR.
+FO004_044,FO004_044_P05,Via della Mura S. Pietro / asse,1110,490,REVIEW,,,,MANUAL_SEMANTIC_REQUIRED,B,,,Candidato ricostruito dal workbench v2.4; verificare corrispondenza omologa univoca storico-CTR.
+FO004_044,FO004_044_P06,Nodo viario centro-est,1030,855,REVIEW,,,,MANUAL_SEMANTIC_REQUIRED,C,,,Candidato ricostruito dal workbench v2.4; verificare corrispondenza omologa univoca storico-CTR.
+FO004_044,FO004_044_P07,Quartiere interno / incrocio,760,1240,REVIEW,,,,MANUAL_SEMANTIC_REQUIRED,C,,,Candidato ricostruito dal workbench v2.4; verificare corrispondenza omologa univoca storico-CTR.
+FO004_044,FO004_044_P08,Bastione/curva esterna,1560,1520,REVIEW,,,,MANUAL_SEMANTIC_REQUIRED,C,,,Candidato ricostruito dal workbench v2.4; verificare corrispondenza omologa univoca storico-CTR.
+FO004_045,FO004_045_P01,Barriera Vittorio Emanuele / area,1890,925,REVIEW,,,,MANUAL_SEMANTIC_REQUIRED,A,,,Candidato ricostruito dal workbench v2.4; verificare corrispondenza omologa univoca storico-CTR.
+FO004_045,FO004_045_P02,Piazza Mercuriale / area,565,620,REVIEW,,,,MANUAL_SEMANTIC_REQUIRED,B,,,Candidato ricostruito dal workbench v2.4; verificare corrispondenza omologa univoca storico-CTR.
+FO004_045,FO004_045_P03,Corso Vittorio Emanuele / asse,1180,420,REVIEW,,,,MANUAL_SEMANTIC_REQUIRED,B,,,Candidato ricostruito dal workbench v2.4; verificare corrispondenza omologa univoca storico-CTR.
+FO004_045,FO004_045_P04,Mura meridionali / tratto,1270,1440,REVIEW,,,,MANUAL_SEMANTIC_REQUIRED,B,,,Candidato ricostruito dal workbench v2.4; verificare corrispondenza omologa univoca storico-CTR.
+FO004_045,FO004_045_P05,Asse viario centrale / incrocio,920,830,REVIEW,,,,MANUAL_SEMANTIC_REQUIRED,C,,,Candidato ricostruito dal workbench v2.4; verificare corrispondenza omologa univoca storico-CTR.
+FO004_045,FO004_045_P06,Nodo urbano sud-est,1630,1190,REVIEW,,,,MANUAL_SEMANTIC_REQUIRED,C,,,Candidato ricostruito dal workbench v2.4; verificare corrispondenza omologa univoca storico-CTR.
+FO004_045,FO004_045_P07,Complesso orientale / cortile,1540,620,REVIEW,,,,MANUAL_SEMANTIC_REQUIRED,C,,,Candidato ricostruito dal workbench v2.4; verificare corrispondenza omologa univoca storico-CTR.
+FO004_045,FO004_045_P08,Piazza Garibaldi / margine,210,1010,REVIEW,,,,MANUAL_SEMANTIC_REQUIRED,C,,,Candidato ricostruito dal workbench v2.4; verificare corrispondenza omologa univoca storico-CTR.

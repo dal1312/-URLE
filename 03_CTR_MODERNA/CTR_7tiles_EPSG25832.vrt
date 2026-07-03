@@ -1,0 +1,48 @@
+<VRTDataset rasterXSize="32418" rasterYSize="26627">
+<SRS>EPSG:25832</SRS>
+<GeoTransform>739339.8998999998, 0.317498824835761, 0, 4906808.26765, 0, -0.317498608219093</GeoTransform>
+<VRTRasterBand dataType="Byte" band="1">
+<SimpleSource>
+<SourceFilename relativeToVRT="1">../00_CTR_GEOTIFF/240093_EPSG25832.tif</SourceFilename>
+<SourceBand>1</SourceBand>
+<SrcRect xOff="0" yOff="0" xSize="10796" ySize="9133"/>
+<DstRect xOff="0" yOff="0" xSize="10796" ySize="9133"/>
+</SimpleSource>
+<SimpleSource>
+<SourceFilename relativeToVRT="1">../00_CTR_GEOTIFF/240131_EPSG25832.tif</SourceFilename>
+<SourceBand>1</SourceBand>
+<SrcRect xOff="0" yOff="0" xSize="10807" ySize="9146"/>
+<DstRect xOff="10795" yOff="8356" xSize="10807" ySize="9146"/>
+</SimpleSource>
+<SimpleSource>
+<SourceFilename relativeToVRT="1">../00_CTR_GEOTIFF/240132_EPSG25832.tif</SourceFilename>
+<SourceBand>1</SourceBand>
+<SrcRect xOff="0" yOff="0" xSize="10816" ySize="9137"/>
+<DstRect xOff="11121" yOff="17103" xSize="10816" ySize="9137"/>
+</SimpleSource>
+<SimpleSource>
+<SourceFilename relativeToVRT="1">../00_CTR_GEOTIFF/240133_EPSG25832.tif</SourceFilename>
+<SourceBand>1</SourceBand>
+<SrcRect xOff="0" yOff="0" xSize="10807" ySize="9125"/>
+<DstRect xOff="637" yOff="17502" xSize="10807" ySize="9125"/>
+</SimpleSource>
+<SimpleSource>
+<SourceFilename relativeToVRT="1">../00_CTR_GEOTIFF/240134_EPSG25832.tif</SourceFilename>
+<SourceBand>1</SourceBand>
+<SrcRect xOff="0" yOff="0" xSize="10804" ySize="9133"/>
+<DstRect xOff="317" yOff="8747" xSize="10804" ySize="9133"/>
+</SimpleSource>
+<SimpleSource>
+<SourceFilename relativeToVRT="1">../00_CTR_GEOTIFF/240143_EPSG25832.tif</SourceFilename>
+<SourceBand>1</SourceBand>
+<SrcRect xOff="0" yOff="0" xSize="10816" ySize="9148"/>
+<DstRect xOff="21602" yOff="16707" xSize="10816" ySize="9148"/>
+</SimpleSource>
+<SimpleSource>
+<SourceFilename relativeToVRT="1">../00_CTR_GEOTIFF/240144_EPSG25832.tif</SourceFilename>
+<SourceBand>1</SourceBand>
+<SrcRect xOff="0" yOff="0" xSize="10811" ySize="9145"/>
+<DstRect xOff="21274" yOff="7959" xSize="10811" ySize="9145"/>
+</SimpleSource>
+</VRTRasterBand>
+</VRTDataset>

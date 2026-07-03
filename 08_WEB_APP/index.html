@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Forlì Digital Twin v2.7 — Point Matching Workbench</title>
+<style>
+:root{--bg:#efe6d7;--panel:#fff8eb;--line:#c6aa7e;--ink:#2a231a;--muted:#6b5b46;--ok:#1a8f45;--bad:#b50000;--rev:#d27a00}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+header{height:62px;background:#ddc8a6;border-bottom:1px solid #b89b6d;padding:10px 14px;display:flex;justify-content:space-between;align-items:center}
+h1{font-size:19px;margin:0}.sub{font-size:12px;color:var(--muted)}
+#app{display:grid;grid-template-columns:340px 1fr 1fr 380px;height:calc(100vh - 62px)}
+aside,.right{background:var(--panel);overflow:auto;padding:10px;border-right:1px solid var(--line)}
+.right{border-right:0;border-left:1px solid var(--line)}
+.viewer{position:relative;background:#222;overflow:hidden;border-right:1px solid #333}
+.stage{position:absolute;left:0;top:0;transform-origin:0 0;cursor:crosshair}
+.stage img{position:absolute;left:0;top:0;user-select:none;pointer-events:none}
+.stage svg{position:absolute;left:0;top:0;overflow:visible}
+label{font-size:12px;font-weight:700;display:block;margin:8px 0 4px}
+select,input,textarea{font:inherit}
+select,input[type=text],textarea{width:100%;padding:7px;border:1px solid #bca27a;border-radius:8px;background:white}
+button{border:1px solid #b89b6d;background:#fff3dc;border-radius:8px;padding:7px 9px;margin:4px 3px 5px 0;cursor:pointer}
+button:hover{background:white}
+.card{background:white;border:1px solid #ddc9a5;border-radius:8px;padding:7px;margin:6px 0;font-size:12px;cursor:pointer}
+.card:hover{background:#fff4dc}.card.sel{outline:3px solid #111}
+.badge{display:inline-block;border-radius:999px;padding:1px 6px;background:#eee;margin-right:3px;font-size:11px}
+.small{font-size:12px;line-height:1.35;color:var(--muted)}
+.warn{background:#fff0ca;border:1px solid #d2a34d;border-radius:9px;padding:9px;margin-bottom:8px;font-size:12px}
+.pt{stroke:#111;stroke-width:1.5;cursor:pointer}.srcpt{fill:#e00000}.targetpt{fill:#1a8f45}.lbl{font-size:13px;paint-order:stroke;stroke:white;stroke-width:4;fill:#111;pointer-events:none}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+textarea{min-height:64px}
+</style>
+</head>
+<body>
+<header>
+<div><h1>Forlì Digital Twin v2.7 — Point Matching Workbench</h1><div class="sub">Storico ↔ CTR EPSG:25832 · clicca il target sulla CTR per calcolare coordinate reali</div></div>
+<div class="sub" id="meta">loading…</div>
+</header>
+<div id="app">
+<aside>
+<div class="warn"><b>Regola:</b> promuovi a KEEP solo punti omologhi certi. Non usare punti scomparsi, spostati o ambigui.</div>
+<label>Foglio storico</label><select id="sheet"></select>
+<label>Tassello CTR target</label><select id="tile"></select>
+<label>Filtro decisione</label><select id="filter"><option value="">Tutti</option><option>PRIORITY_REVIEW</option><option>REVIEW</option><option>LOW_PRIORITY_REVIEW</option><option>KEEP</option><option>REJECT</option></select>
+<button id="fitH">Adatta storico</button><button id="fitC">Adatta CTR</button><button id="export">Esporta CSV</button>
+<div id="gcpList"></div>
+</aside>
+<div class="viewer" id="histView"><div class="stage" id="histStage"><img id="histImg"><svg id="histSvg"></svg></div></div>
+<div class="viewer" id="ctrView"><div class="stage" id="ctrStage"><img id="ctrImg"><svg id="ctrSvg"></svg></div></div>
+<div class="right">
+<h2 style="font-size:16px;margin:0 0 8px">Scheda punto</h2>
+<div id="form" class="small">Seleziona un GCP dalla lista.</div>
+</div>
+</div>
+<script>
+let D, currentSheet, currentTile, selected=null, hview={x:0,y:0,s:1}, cview={x:0,y:0,s:1};
+const histStage=document.getElementById('histStage'), ctrStage=document.getElementById('ctrStage');
+const histImg=document.getElementById('histImg'), ctrImg=document.getElementById('ctrImg');
+const histSvg=document.getElementById('histSvg'), ctrSvg=document.getElementById('ctrSvg');
+
+function apply(stage,v){stage.style.transform=`translate(${v.x}px,${v.y}px) scale(${v.s})`}
+function fit(viewEl,img,stage,v){if(!img.naturalWidth)return;let s=Math.min(viewEl.clientWidth/img.naturalWidth,viewEl.clientHeight/img.naturalHeight)*.96;v.s=s;v.x=(viewEl.clientWidth-img.naturalWidth*s)/2;v.y=(viewEl.clientHeight-img.naturalHeight*s)/2;apply(stage,v)}
+function S(svg,tag,a){let n=document.createElementNS('http://www.w3.org/2000/svg',tag);for(const[k,v]of Object.entries(a))n.setAttribute(k,v);svg.appendChild(n);return n}
+function currentHist(){return D.historical_previews.find(h=>h.sheet_id===currentSheet)}
+function currentTileData(){return D.ctr_tiles.find(t=>t.tile===currentTile)}
+function currentGcps(){let f=document.getElementById('filter').value;return D.gcps.filter(g=>g.sheet_id===currentSheet && (!f || g.decision===f))}
+function previewToMap(tile, px, py){
+  // Full image pixel from preview pixel
+  let fullX = px * tile.width / tile.preview_width;
+  let fullY = py * tile.height / tile.preview_height;
+  let gt = tile.transform; // rasterio Affine serialized: [a,b,c,d,e,f] means x=a*col+b*row+c; y=d*col+e*row+f
+  let x = gt[0]*fullX + gt[1]*fullY + gt[2];
+  let y = gt[3]*fullX + gt[4]*fullY + gt[5];
+  return [x,y,fullX,fullY];
+}
+function render(){
+ histSvg.innerHTML=''; ctrSvg.innerHTML='';
+ histSvg.setAttribute('width',histImg.naturalWidth||1); histSvg.setAttribute('height',histImg.naturalHeight||1);
+ ctrSvg.setAttribute('width',ctrImg.naturalWidth||1); ctrSvg.setAttribute('height',ctrImg.naturalHeight||1);
+ const hist=currentHist();
+ currentGcps().forEach(g=>{
+   const x=g.source_x*hist.scale_x, y=g.source_y*hist.scale_y;
+   let c=S(histSvg,'circle',{cx:x,cy:y,r:11,class:'pt srcpt'});
+   c.onclick=(e)=>{e.stopPropagation();selectGcp(g.gcp_id)};
+   let t=S(histSvg,'text',{x:x+14,y:y+5,class:'lbl'});t.textContent=g.gcp_id.split('_').pop();
+   if(g.target_preview_x&&g.target_preview_y){
+     let tc=S(ctrSvg,'circle',{cx:g.target_preview_x,cy:g.target_preview_y,r:11,class:'pt targetpt'});
+     tc.onclick=(e)=>{e.stopPropagation();selectGcp(g.gcp_id)};
+     let tt=S(ctrSvg,'text',{x:+g.target_preview_x+14,y:+g.target_preview_y+5,class:'lbl'});tt.textContent=g.gcp_id.split('_').pop();
+   }
+ });
+ renderList();
+ if(selected) selectGcp(selected.gcp_id, false);
+}
+function renderList(){
+ let div=document.getElementById('gcpList');div.innerHTML='';
+ currentGcps().forEach(g=>{
+   let el=document.createElement('div');el.className='card'+(selected&&selected.gcp_id===g.gcp_id?' sel':'');
+   el.innerHTML=`<b>${g.gcp_id}</b><span class="badge">${g.decision}</span><span class="badge">${g.confidence}</span><div>${g.candidate_name}</div>`;
+   el.onclick=()=>selectGcp(g.gcp_id);div.appendChild(el);
+ });
+}
+function selectGcp(id, rerender=true){
+ selected=D.gcps.find(g=>g.gcp_id===id);
+ if(!selected)return;
+ if(rerender) render();
+ document.getElementById('form').innerHTML=`
+ <b>${selected.gcp_id}</b><p>${selected.candidate_name}</p>
+ <label>Decisione</label><select id="f_dec"><option>KEEP</option><option>REJECT</option><option>REVIEW</option><option>PRIORITY_REVIEW</option><option>LOW_PRIORITY_REVIEW</option></select>
+ <div class="grid2"><div><label>Source X</label><input type="text" id="f_sx" value="${selected.source_x}"></div><div><label>Source Y</label><input type="text" id="f_sy" value="${selected.source_y}"></div></div>
+ <div class="grid2"><div><label>Target E</label><input type="text" id="f_e" value="${selected.target_easting_epsg25832||''}"></div><div><label>Target N</label><input type="text" id="f_n" value="${selected.target_northing_epsg25832||''}"></div></div>
+ <label>Tile target</label><input type="text" id="f_tile" value="${selected.target_tile||''}">
+ <label>Note</label><textarea id="f_note">${selected.note||''}</textarea>
+ <button onclick="saveForm()">Salva</button>
+ <button onclick="markKeep()">KEEP</button><button onclick="markReject()">REJECT</button>`;
+ document.getElementById('f_dec').value=selected.decision;
+}
+window.saveForm=function(){
+ if(!selected)return;
+ selected.decision=document.getElementById('f_dec').value;
+ selected.source_x=document.getElementById('f_sx').value;
+ selected.source_y=document.getElementById('f_sy').value;
+ selected.target_easting_epsg25832=document.getElementById('f_e').value;
+ selected.target_northing_epsg25832=document.getElementById('f_n').value;
+ selected.target_tile=document.getElementById('f_tile').value;
+ selected.note=document.getElementById('f_note').value;
+ render();
+}
+window.markKeep=function(){if(!selected)return;selected.decision='KEEP';saveForm()}
+window.markReject=function(){if(!selected)return;selected.decision='REJECT';saveForm()}
+
+ctrView.addEventListener('click', e=>{
+ if(!selected)return;
+ const r=ctrView.getBoundingClientRect();
+ const px=(e.clientX-r.left-cview.x)/cview.s;
+ const py=(e.clientY-r.top-cview.y)/cview.s;
+ if(px<0||py<0||px>ctrImg.naturalWidth||py>ctrImg.naturalHeight)return;
+ let tile=currentTileData();
+ let [E,N,fullX,fullY]=previewToMap(tile,px,py);
+ selected.target_preview_x=Math.round(px*100)/100;
+ selected.target_preview_y=Math.round(py*100)/100;
+ selected.target_full_x=Math.round(fullX*100)/100;
+ selected.target_full_y=Math.round(fullY*100)/100;
+ selected.target_easting_epsg25832=E.toFixed(3);
+ selected.target_northing_epsg25832=N.toFixed(3);
+ selected.target_tile=currentTile;
+ selected.match_method='MANUAL_CLICK_ON_CTR_PREVIEW';
+ selected.decision='KEEP';
+ selected.note=(selected.note||'')+' | Target clicked on CTR preview.';
+ render();
+});
+
+function loadSheet(id){
+ currentSheet=id;
+ let h=currentHist();histImg.src=h.file;histImg.onload=()=>{fit(document.getElementById('histView'),histImg,histStage,hview);render()};
+}
+function loadTile(id){
+ currentTile=id;
+ let t=currentTileData();ctrImg.src='img/ctr/'+t.preview;ctrImg.onload=()=>{fit(document.getElementById('ctrView'),ctrImg,ctrStage,cview);render()};
+}
+function setupPanZoom(viewEl,stage,v){
+ let drag=null;
+ viewEl.addEventListener('wheel',e=>{e.preventDefault();let old=v.s;v.s*=e.deltaY<0?1.12:.89;v.s=Math.max(.08,Math.min(8,v.s));let r=viewEl.getBoundingClientRect(),mx=e.clientX-r.left,my=e.clientY-r.top;v.x=mx-(mx-v.x)*(v.s/old);v.y=my-(my-v.y)*(v.s/old);apply(stage,v)},{passive:false});
+ viewEl.addEventListener('pointerdown',e=>{if(!e.shiftKey)return;drag={x:e.clientX,y:e.clientY,ox:v.x,oy:v.y};stage.style.cursor='grabbing'});
+ window.addEventListener('pointermove',e=>{if(!drag)return;v.x=drag.ox+e.clientX-drag.x;v.y=drag.oy+e.clientY-drag.y;apply(stage,v)});
+ window.addEventListener('pointerup',()=>{drag=null;stage.style.cursor='crosshair'});
+}
+document.getElementById('fitH').onclick=()=>fit(document.getElementById('histView'),histImg,histStage,hview);
+document.getElementById('fitC').onclick=()=>fit(document.getElementById('ctrView'),ctrImg,ctrStage,cview);
+document.getElementById('filter').onchange=render;
+document.getElementById('export').onclick=()=>{
+ const headers=["sheet_id","gcp_id","candidate_name","source_x","source_y","decision","target_easting_epsg25832","target_northing_epsg25832","target_tile","target_preview_x","target_preview_y","match_method","confidence","note"];
+ let csv=headers.join(',')+'\n'+D.gcps.map(g=>headers.map(h=>`"${String(g[h]??'').replaceAll('"','""')}"`).join(',')).join('\n');
+ let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='GCP_matched_v2_7.csv';a.click();
+}
+fetch('data/point_matching_v2_7.json').then(r=>r.json()).then(d=>{
+ D=d;
+ let ss=[...new Set(D.historical_previews.map(h=>h.sheet_id))];
+ let sel=document.getElementById('sheet');ss.forEach(s=>{let o=document.createElement('option');o.value=s;o.textContent=s;sel.appendChild(o)});
+ sel.onchange=e=>loadSheet(e.target.value);
+ let ts=document.getElementById('tile');D.ctr_tiles.forEach(t=>{let o=document.createElement('option');o.value=t.tile;o.textContent=t.tile;ts.appendChild(o)});
+ ts.onchange=e=>loadTile(e.target.value);
+ setupPanZoom(document.getElementById('histView'),histStage,hview);setupPanZoom(document.getElementById('ctrView'),ctrStage,cview);
+ loadSheet(ss[0]); loadTile(D.ctr_tiles[0].tile);
+ document.getElementById('meta').textContent=`${D.gcps.length} GCP · ${D.ctr_tiles.length} tasselli CTR`;
+});
+</script>
+</body>
+</html>
