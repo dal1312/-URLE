@@ -1,0 +1,13 @@
+cff-version: 1.2.0
+title: "Forli Digital Twin"
+message: "If you use this dataset or code, please cite it."
+type: dataset
+authors:
+  - name: "Forli Digital Twin Project"
+repository-code: "https://github.com/dal1312/-URLE"
+keywords:
+  - GIS
+  - historical atlas
+  - Forli
+  - digital twin
+license: "CC-BY-4.0"

@@ -1,0 +1,17 @@
+{
+  "title": "Forli Digital Twin",
+  "subtitle": "Atlante storico-temporale e GIS della città di Forlì",
+  "language": "it",
+  "crs": "EPSG:25832",
+  "status": "work in progress",
+  "repository": "https://github.com/dal1312/-URLE",
+  "keywords": [
+    "Forlì",
+    "Digital Twin",
+    "GIS storico",
+    "Catasto Gregoriano",
+    "CTR",
+    "EPSG:25832"
+  ],
+  "created": "2026-07-03T22:57:46.065050"
+}

@@ -1,0 +1,22 @@
+{
+  "project": "Forli Digital Twin",
+  "version": "3.1 Completion Kit",
+  "repo": "https://github.com/dal1312/-URLE",
+  "working_crs": "EPSG:25832",
+  "required_final_gcp_per_sheet": 8,
+  "recommended_final_gcp_per_sheet": 12,
+  "historical_sheets": [
+    "FO004_042",
+    "FO004_043",
+    "FO004_044",
+    "FO004_045"
+  ],
+  "ctr_vrt": "03_CTR_MODERNA/CTR_7tiles_EPSG25832.vrt",
+  "gcp_review_csv": "04_GCP_GEOREF/GCP_point_matching_v2_7.csv",
+  "final_outputs": {
+    "geotiff": "11_FINAL_OUTPUT/geotiff_final/",
+    "vectors": "11_FINAL_OUTPUT/vector_final/",
+    "database": "11_FINAL_OUTPUT/database_final/",
+    "web": "11_FINAL_OUTPUT/web_final/"
+  }
+}
