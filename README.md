@@ -1,3 +1,29 @@
+# Forlì Digital Twin — Master v3.2 Runtime Dashboard
+
+## Avvio
+
+Metodo consigliato:
+
+```bash
+python start_server.py
+```
+
+Oppure aprire:
+
+```text
+index.html
+```
+
+Dashboard:
+
+```text
+00_RUNTIME/index.html
+```
+
+
+
+---
+
 # Forlì Digital Twin
 
 Digital Twin storico-temporale della città di Forlì.

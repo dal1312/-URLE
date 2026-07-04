@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Forlì Digital Twin — Runtime Dashboard</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header>
+<h1>Forlì Digital Twin</h1>
+<div class="sub">Runtime Dashboard · <span id="version"></span> · CRS operativo <span id="crs"></span></div>
+</header>
+<main>
+<section class="card">
+<h2>Avvio operativo</h2>
+<p>Questa è la pagina principale del progetto. Da qui si accede al workbench GCP, ai report, al manifest e agli script di completamento.</p>
+<div class="links">
+<a class="button" href="../08_WEB_APP/index.html">Apri GCP/Web Workbench</a>
+<a class="button" href="../12_MANIFEST/master_manifest_v3_2.json">Manifest v3.2</a>
+<a class="button" href="../12_MANIFEST/master_inventory_v3_0.csv">Inventario</a>
+<a class="button" href="../13_PIPELINE/PIPELINE_FINAL_COMPLETION.md">Pipeline finale</a>
+<a class="button" href="../14_RELEASE/checks/FINAL_RELEASE_CHECKLIST.md">Checklist release</a>
+</div>
+</section>
+
+<h2>Stato moduli</h2>
+<section class="grid" id="modules"></section>
+
+<section class="card">
+<h2>Prossime azioni</h2>
+<pre id="steps"></pre>
+</section>
+
+<section class="card">
+<h2>Avvio con server locale</h2>
+<p>Se il browser blocca i file JSON aperti con doppio click, avvia un server locale nella cartella del progetto:</p>
+<pre>python -m http.server 8000</pre>
+<p>poi apri:</p>
+<pre>http://localhost:8000/00_RUNTIME/index.html</pre>
+</section>
+</main>
+<footer>Forlì Digital Twin · Master Runtime Dashboard</footer>
+<script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,72 @@
+{
+  "project": "Forli Digital Twin",
+  "version": "3.2 Runtime Dashboard",
+  "crs": "EPSG:25832",
+  "repository": "https://github.com/dal1312/-URLE",
+  "modules": [
+    {
+      "id": "CTR",
+      "name": "CTR moderna EPSG:25832",
+      "status": "GENERATED",
+      "progress": 100,
+      "note": "7 tasselli + VRT disponibili"
+    },
+    {
+      "id": "HIST",
+      "name": "Raster storici FO004",
+      "status": "GENERATED",
+      "progress": 100,
+      "note": "4 fogli storici disponibili"
+    },
+    {
+      "id": "GCP",
+      "name": "Matching GCP",
+      "status": "REVIEW_REQUIRED",
+      "progress": 35,
+      "note": "32 candidati, target reali da verificare"
+    },
+    {
+      "id": "GEOTIFF",
+      "name": "GeoTIFF storici finali",
+      "status": "MISSING",
+      "progress": 0,
+      "note": "dipende da GCP_FINAL_VERIFIED.csv"
+    },
+    {
+      "id": "VECTOR",
+      "name": "Vettorializzazione",
+      "status": "MISSING",
+      "progress": 0,
+      "note": "mura, strade, edifici, particelle"
+    },
+    {
+      "id": "TEMPORAL",
+      "name": "Database temporale",
+      "status": "PRELIMINARY",
+      "progress": 25,
+      "note": "schema pronto, dati da popolare"
+    },
+    {
+      "id": "WEB",
+      "name": "Viewer web",
+      "status": "GENERATED",
+      "progress": 55,
+      "note": "workbench e dashboard presenti"
+    },
+    {
+      "id": "RELEASE",
+      "name": "Release finale",
+      "status": "MISSING",
+      "progress": 0,
+      "note": "richiede output finali validati"
+    }
+  ],
+  "next_steps": [
+    "Aprire 00_RUNTIME/index.html",
+    "Usare il link al GCP/Web Workbench",
+    "Compilare GCP_FINAL_VERIFIED.csv",
+    "Eseguire build_gdal_commands.py",
+    "Produrre GeoTIFF finali",
+    "Avviare vettorializzazione"
+  ]
+}
