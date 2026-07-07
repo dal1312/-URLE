@@ -15,3 +15,5 @@ jobs:
           python-version: '3.11'
       - name: Validate project structure
         run: python 13_PIPELINE/scripts/validate_project.py
+      - name: Report GCP readiness
+        run: python 13_PIPELINE/scripts/check_gcp_status.py
