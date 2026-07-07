@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Forlì Digital Twin v2.7 — Point Matching Workbench</title>
+<title>Forlì Digital Twin v3.1 — Point Matching Workbench</title>
 <style>
 :root{--bg:#efe6d7;--panel:#fff8eb;--line:#c6aa7e;--ink:#2a231a;--muted:#6b5b46;--ok:#1a8f45;--bad:#b50000;--rev:#d27a00}
 *{box-sizing:border-box}
@@ -27,6 +27,7 @@ button:hover{background:white}
 .badge{display:inline-block;border-radius:999px;padding:1px 6px;background:#eee;margin-right:3px;font-size:11px}
 .small{font-size:12px;line-height:1.35;color:var(--muted)}
 .warn{background:#fff0ca;border:1px solid #d2a34d;border-radius:9px;padding:9px;margin-bottom:8px;font-size:12px}
+.err{background:#ffe8e8;border:1px solid #c77;border-radius:9px;padding:9px;margin:8px 0;font-size:12px;color:#600}
 .pt{stroke:#111;stroke-width:1.5;cursor:pointer}.srcpt{fill:#e00000}.targetpt{fill:#1a8f45}.lbl{font-size:13px;paint-order:stroke;stroke:white;stroke-width:4;fill:#111;pointer-events:none}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 textarea{min-height:64px}
@@ -34,7 +35,7 @@ textarea{min-height:64px}
 </head>
 <body>
 <header>
-<div><h1>Forlì Digital Twin v2.7 — Point Matching Workbench</h1><div class="sub">Storico ↔ CTR EPSG:25832 · clicca il target sulla CTR per calcolare coordinate reali</div></div>
+<div><h1>Forlì Digital Twin v3.1 — Point Matching Workbench</h1><div class="sub">Storico ↔ CTR EPSG:25832 · clicca il target sulla CTR per calcolare coordinate reali</div></div>
 <div class="sub" id="meta">loading…</div>
 </header>
 <div id="app">
@@ -51,6 +52,7 @@ textarea{min-height:64px}
 <div class="right">
 <h2 style="font-size:16px;margin:0 0 8px">Scheda punto</h2>
 <div id="form" class="small">Seleziona un GCP dalla lista.</div>
+<div id="runtime" class="small"></div>
 </div>
 </div>
 <script>
@@ -58,6 +60,7 @@ let D, currentSheet, currentTile, selected=null, hview={x:0,y:0,s:1}, cview={x:0
 const histStage=document.getElementById('histStage'), ctrStage=document.getElementById('ctrStage');
 const histImg=document.getElementById('histImg'), ctrImg=document.getElementById('ctrImg');
 const histSvg=document.getElementById('histSvg'), ctrSvg=document.getElementById('ctrSvg');
+const runtime=document.getElementById('runtime');
 
 function apply(stage,v){stage.style.transform=`translate(${v.x}px,${v.y}px) scale(${v.s})`}
 function fit(viewEl,img,stage,v){if(!img.naturalWidth)return;let s=Math.min(viewEl.clientWidth/img.naturalWidth,viewEl.clientHeight/img.naturalHeight)*.96;v.s=s;v.x=(viewEl.clientWidth-img.naturalWidth*s)/2;v.y=(viewEl.clientHeight-img.naturalHeight*s)/2;apply(stage,v)}
@@ -65,14 +68,31 @@ function S(svg,tag,a){let n=document.createElementNS('http://www.w3.org/2000/svg
 function currentHist(){return D.historical_previews.find(h=>h.sheet_id===currentSheet)}
 function currentTileData(){return D.ctr_tiles.find(t=>t.tile===currentTile)}
 function currentGcps(){let f=document.getElementById('filter').value;return D.gcps.filter(g=>g.sheet_id===currentSheet && (!f || g.decision===f))}
+function esc(s){return String(s??'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))}
+function logRuntime(msg,type='warn'){let div=document.createElement('div');div.className=type==='err'?'err':'warn';div.innerHTML=msg;runtime.prepend(div)}
+function enhancedToOriginal(p){return p.replace('img/historical/','../02_RASTER_STORICI/').replace('_enhanced.jpg','.jpg')}
+function svgPlaceholder(label,w,h){
+ const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">
+ <rect width="100%" height="100%" fill="#eee6d8"/>
+ <g stroke="#b9a47f" stroke-width="1">${Array.from({length:11},(_,i)=>`<line x1="${i*w/10}" y1="0" x2="${i*w/10}" y2="${h}"/><line x1="0" y1="${i*h/10}" x2="${w}" y2="${i*h/10}"/>`).join('')}</g>
+ <text x="${w/2}" y="${h/2}" text-anchor="middle" font-family="Arial" font-size="36" fill="#2a231a">${label}</text>
+ <text x="${w/2}" y="${h/2+42}" text-anchor="middle" font-family="Arial" font-size="18" fill="#6b5b46">preview mancante: griglia cliccabile da metadata</text>
+ </svg>`;
+ return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
+}
+function loadImageWithFallback(img, urls, onok){
+ let i=0;
+ img.onerror=()=>{i++; if(i<urls.length){img.src=urls[i]}else{logRuntime(`Asset immagine non trovato: ${esc(urls.join(' → '))}`,'err')}};
+ img.onload=onok;
+ img.src=urls[0];
+}
 function previewToMap(tile, px, py){
-  // Full image pixel from preview pixel
-  let fullX = px * tile.width / tile.preview_width;
-  let fullY = py * tile.height / tile.preview_height;
-  let gt = tile.transform; // rasterio Affine serialized: [a,b,c,d,e,f] means x=a*col+b*row+c; y=d*col+e*row+f
-  let x = gt[0]*fullX + gt[1]*fullY + gt[2];
-  let y = gt[3]*fullX + gt[4]*fullY + gt[5];
-  return [x,y,fullX,fullY];
+ let fullX = px * tile.width / tile.preview_width;
+ let fullY = py * tile.height / tile.preview_height;
+ let gt = tile.transform;
+ let x = gt[0]*fullX + gt[1]*fullY + gt[2];
+ let y = gt[3]*fullX + gt[4]*fullY + gt[5];
+ return [x,y,fullX,fullY];
 }
 function render(){
  histSvg.innerHTML=''; ctrSvg.innerHTML='';
@@ -80,7 +100,7 @@ function render(){
  ctrSvg.setAttribute('width',ctrImg.naturalWidth||1); ctrSvg.setAttribute('height',ctrImg.naturalHeight||1);
  const hist=currentHist();
  currentGcps().forEach(g=>{
-   const x=g.source_x*hist.scale_x, y=g.source_y*hist.scale_y;
+   const x=Number(g.source_x)*Number(hist.scale_x||1), y=Number(g.source_y)*Number(hist.scale_y||1);
    let c=S(histSvg,'circle',{cx:x,cy:y,r:11,class:'pt srcpt'});
    c.onclick=(e)=>{e.stopPropagation();selectGcp(g.gcp_id)};
    let t=S(histSvg,'text',{x:x+14,y:y+5,class:'lbl'});t.textContent=g.gcp_id.split('_').pop();
@@ -97,7 +117,7 @@ function renderList(){
  let div=document.getElementById('gcpList');div.innerHTML='';
  currentGcps().forEach(g=>{
    let el=document.createElement('div');el.className='card'+(selected&&selected.gcp_id===g.gcp_id?' sel':'');
-   el.innerHTML=`<b>${g.gcp_id}</b><span class="badge">${g.decision}</span><span class="badge">${g.confidence}</span><div>${g.candidate_name}</div>`;
+   el.innerHTML=`<b>${esc(g.gcp_id)}</b><span class="badge">${esc(g.decision)}</span><span class="badge">${esc(g.confidence)}</span><div>${esc(g.candidate_name)}</div>`;
    el.onclick=()=>selectGcp(g.gcp_id);div.appendChild(el);
  });
 }
@@ -106,12 +126,12 @@ function selectGcp(id, rerender=true){
  if(!selected)return;
  if(rerender) render();
  document.getElementById('form').innerHTML=`
- <b>${selected.gcp_id}</b><p>${selected.candidate_name}</p>
+ <b>${esc(selected.gcp_id)}</b><p>${esc(selected.candidate_name)}</p>
  <label>Decisione</label><select id="f_dec"><option>KEEP</option><option>REJECT</option><option>REVIEW</option><option>PRIORITY_REVIEW</option><option>LOW_PRIORITY_REVIEW</option></select>
- <div class="grid2"><div><label>Source X</label><input type="text" id="f_sx" value="${selected.source_x}"></div><div><label>Source Y</label><input type="text" id="f_sy" value="${selected.source_y}"></div></div>
- <div class="grid2"><div><label>Target E</label><input type="text" id="f_e" value="${selected.target_easting_epsg25832||''}"></div><div><label>Target N</label><input type="text" id="f_n" value="${selected.target_northing_epsg25832||''}"></div></div>
- <label>Tile target</label><input type="text" id="f_tile" value="${selected.target_tile||''}">
- <label>Note</label><textarea id="f_note">${selected.note||''}</textarea>
+ <div class="grid2"><div><label>Source X</label><input type="text" id="f_sx" value="${esc(selected.source_x)}"></div><div><label>Source Y</label><input type="text" id="f_sy" value="${esc(selected.source_y)}"></div></div>
+ <div class="grid2"><div><label>Target E</label><input type="text" id="f_e" value="${esc(selected.target_easting_epsg25832||'')}"></div><div><label>Target N</label><input type="text" id="f_n" value="${esc(selected.target_northing_epsg25832||'')}"></div></div>
+ <label>Tile target</label><input type="text" id="f_tile" value="${esc(selected.target_tile||'')}">
+ <label>Note</label><textarea id="f_note">${esc(selected.note||'')}</textarea>
  <button onclick="saveForm()">Salva</button>
  <button onclick="markKeep()">KEEP</button><button onclick="markReject()">REJECT</button>`;
  document.getElementById('f_dec').value=selected.decision;
@@ -129,7 +149,6 @@ window.saveForm=function(){
 }
 window.markKeep=function(){if(!selected)return;selected.decision='KEEP';saveForm()}
 window.markReject=function(){if(!selected)return;selected.decision='REJECT';saveForm()}
-
 ctrView.addEventListener('click', e=>{
  if(!selected)return;
  const r=ctrView.getBoundingClientRect();
@@ -150,14 +169,15 @@ ctrView.addEventListener('click', e=>{
  selected.note=(selected.note||'')+' | Target clicked on CTR preview.';
  render();
 });
-
 function loadSheet(id){
  currentSheet=id;
- let h=currentHist();histImg.src=h.file;histImg.onload=()=>{fit(document.getElementById('histView'),histImg,histStage,hview);render()};
+ let h=currentHist();
+ loadImageWithFallback(histImg,[h.file,enhancedToOriginal(h.file),svgPlaceholder(id,h.preview_width||1200,h.preview_height||900)],()=>{fit(document.getElementById('histView'),histImg,histStage,hview);render()});
 }
 function loadTile(id){
  currentTile=id;
- let t=currentTileData();ctrImg.src='img/ctr/'+t.preview;ctrImg.onload=()=>{fit(document.getElementById('ctrView'),ctrImg,ctrStage,cview);render()};
+ let t=currentTileData();
+ loadImageWithFallback(ctrImg,['img/ctr/'+t.preview,t.preview,'../03_CTR_MODERNA/'+t.preview,svgPlaceholder('CTR '+id,t.preview_width||1800,t.preview_height||1500)],()=>{fit(document.getElementById('ctrView'),ctrImg,ctrStage,cview);render()});
 }
 function setupPanZoom(viewEl,stage,v){
  let drag=null;
@@ -170,11 +190,19 @@ document.getElementById('fitH').onclick=()=>fit(document.getElementById('histVie
 document.getElementById('fitC').onclick=()=>fit(document.getElementById('ctrView'),ctrImg,ctrStage,cview);
 document.getElementById('filter').onchange=render;
 document.getElementById('export').onclick=()=>{
- const headers=["sheet_id","gcp_id","candidate_name","source_x","source_y","decision","target_easting_epsg25832","target_northing_epsg25832","target_tile","target_preview_x","target_preview_y","match_method","confidence","note"];
+ const headers=["sheet_id","gcp_id","candidate_name","source_x","source_y","decision","target_easting_epsg25832","target_northing_epsg25832","target_tile","target_preview_x","target_preview_y","target_full_x","target_full_y","match_method","confidence","note"];
  let csv=headers.join(',')+'\n'+D.gcps.map(g=>headers.map(h=>`"${String(g[h]??'').replaceAll('"','""')}"`).join(',')).join('\n');
- let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='GCP_matched_v2_7.csv';a.click();
+ let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='GCP_FINAL_VERIFIED_candidate.csv';a.click();
 }
-fetch('data/point_matching_v2_7.json').then(r=>r.json()).then(d=>{
+async function loadJson(){
+ const urls=['point_matching_v2_7.json','data/point_matching_v2_7.json'];
+ for(const url of urls){
+   try{const r=await fetch(url); if(r.ok){return await r.json();}}
+   catch(e){}
+ }
+ throw new Error('point_matching_v2_7.json non trovato');
+}
+loadJson().then(d=>{
  D=d;
  let ss=[...new Set(D.historical_previews.map(h=>h.sheet_id))];
  let sel=document.getElementById('sheet');ss.forEach(s=>{let o=document.createElement('option');o.value=s;o.textContent=s;sel.appendChild(o)});
@@ -183,7 +211,11 @@ fetch('data/point_matching_v2_7.json').then(r=>r.json()).then(d=>{
  ts.onchange=e=>loadTile(e.target.value);
  setupPanZoom(document.getElementById('histView'),histStage,hview);setupPanZoom(document.getElementById('ctrView'),ctrStage,cview);
  loadSheet(ss[0]); loadTile(D.ctr_tiles[0].tile);
- document.getElementById('meta').textContent=`${D.gcps.length} GCP · ${D.ctr_tiles.length} tasselli CTR`;
+ const keep=D.gcps.filter(g=>g.decision==='KEEP'&&g.target_easting_epsg25832&&g.target_northing_epsg25832).length;
+ document.getElementById('meta').textContent=`${D.gcps.length} GCP · ${D.ctr_tiles.length} tasselli CTR · KEEP verificati ${keep}`;
+}).catch(err=>{
+ document.getElementById('meta').textContent='errore caricamento';
+ document.getElementById('form').innerHTML=`<div class="err"><b>Errore:</b> ${esc(err.message)}<br>Apri il workbench da un server locale, es. <code>python -m http.server</code> dentro <code>08_WEB_APP</code>.</div>`;
 });
 </script>
 </body>
