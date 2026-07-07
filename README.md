@@ -1,33 +1,26 @@
-# Forlì Digital Twin
+# Forli Digital Twin
 
-Digital Twin storico-temporale della città di Forlì.
+Digital Twin storico-temporale della citta di Forli.
 
-Il progetto integra:
-- cartografia storica;
-- Catasto Gregoriano;
-- fogli catastali storici;
-- CTR moderna EPSG:25832;
-- workbench GCP;
-- modello temporale `year_start / year_end`;
-- pipeline GIS;
-- viewer web;
-- manifest e inventario dei dati.
+Il progetto integra cartografia storica, Catasto Gregoriano, fogli catastali storici, CTR moderna EPSG:25832, workbench GCP, modello temporale, pipeline GIS, viewer web, manifest e inventario dei dati.
 
 ## Stato corrente
 
-Il progetto è consolidato nel Master v3.1.
+Il progetto e consolidato nel Master v3.2 operativo.
 
 Completato:
 - inventario generale;
 - CTR moderna georeferenziata;
 - mosaico virtuale VRT;
-- workbench GCP;
+- workbench GCP corretto;
 - schema temporale;
-- struttura web/GIS;
-- pipeline tecnica.
+- struttura web GIS;
+- pipeline tecnica;
+- script rapido di controllo GCP.
 
 Da completare:
 - matching reale dei GCP;
+- esportazione GCP_FINAL_VERIFIED.csv;
 - GeoTIFF storici finali;
 - vettorializzazione;
 - database storico popolato;
@@ -35,26 +28,26 @@ Da completare:
 
 ## CRS operativo
 
-EPSG:25832 — ETRS89 / UTM zone 32N.
+EPSG:25832 - ETRS89 UTM zone 32N.
 
-## Avvio rapido
+## Avvio workbench
 
-Aprire il workbench web:
+Da terminale entrare nella cartella 08_WEB_APP e avviare un server locale Python sulla porta 8000.
 
-```text
-08_WEB_APP/index.html
-```
+Poi aprire il browser sulla porta 8000.
 
-Oppure seguire:
+## Controllo GCP
 
-```text
-13_PIPELINE/PIPELINE_FINAL_COMPLETION.md
-```
+Da root repository eseguire lo script 13_PIPELINE/scripts/check_gcp_status.py.
+
+## Pipeline finale
+
+Seguire 13_PIPELINE/PIPELINE_FINAL_COMPLETION.md.
+
+## Piano operativo
+
+Seguire 13_PIPELINE/NEXT_STEPS_v3_2.md.
 
 ## Repository
 
-Repository indicato dall'utente:
-
-```text
 https://github.com/dal1312/-URLE
-```
