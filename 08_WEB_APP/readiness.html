@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Forli Digital Twin - GCP Readiness</title>
+<style>
+body{font-family:system-ui,Arial,sans-serif;margin:0;background:#efe6d7;color:#2a231a}main{max-width:1100px;margin:auto;padding:24px}h1{margin-top:0}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}.card{background:#fff8eb;border:1px solid #c6aa7e;border-radius:12px;padding:16px}.ready{border-left:8px solid #1a8f45}.notready{border-left:8px solid #b50000}.bar{height:12px;background:#ddd;border-radius:99px;overflow:hidden}.fill{height:100%;background:#1a8f45}.big{font-size:30px;font-weight:800}.muted{color:#6b5b46}button,a.btn{display:inline-block;padding:9px 12px;border:1px solid #9c7c50;border-radius:8px;background:#fff3dc;color:#2a231a;text-decoration:none;cursor:pointer;margin-right:6px}.summary{margin:16px 0;padding:14px;background:white;border-radius:12px;border:1px solid #c6aa7e}code{background:#eee;padding:2px 5px;border-radius:5px}
+</style>
+</head>
+<body><main>
+<h1>GCP Readiness Dashboard v3.2</h1>
+<p class="muted">Gate operativo per la georeferenziazione finale EPSG:25832. Ogni foglio richiede almeno 8 GCP KEEP completi.</p>
+<div class="summary" id="summary">Caricamento...</div>
+<div class="grid" id="grid"></div>
+<p><a class="btn" href="index.html">Apri Point Matching Workbench</a><button id="export">Esporta GCP verificati</button></p>
+<div class="summary"><b>Pipeline successiva</b><p>Quando tutti i fogli risultano READY, esportare i GCP verificati e usare gli script in <code>13_PIPELINE/scripts</code>.</p></div>
+</main>
+<script>
+let D;
+const expected=['FO004_042','FO004_043','FO004_044','FO004_045'];
+function complete(g){return g.decision==='KEEP' && g.source_x!=='' && g.source_y!=='' && g.target_easting_epsg25832!=='' && g.target_easting_epsg25832!=null && g.target_northing_epsg25832!=='' && g.target_northing_epsg25832!=null && g.target_tile}
+function stats(){return expected.map(sheet=>{let all=D.gcps.filter(g=>g.sheet_id===sheet);let ok=all.filter(complete);return {sheet,all,ok,ready:ok.length>=8}})}
+function render(){let s=stats(),total=s.reduce((n,x)=>n+x.ok.length,0),ready=s.filter(x=>x.ready).length;document.getElementById('summary').innerHTML=`<span class="big">${ready}/4</span> fogli READY &nbsp; <span class="big">${total}/32</span> GCP verificati`;let grid=document.getElementById('grid');grid.innerHTML='';s.forEach(x=>{let pct=Math.min(100,x.ok.length/8*100);let d=document.createElement('div');d.className='card '+(x.ready?'ready':'notready');d.innerHTML=`<h2>${x.sheet}</h2><div class="big">${x.ok.length}/8</div><p>${x.ready?'READY':'NEEDS MATCHING'}</p><div class="bar"><div class="fill" style="width:${pct}%"></div></div><p class="muted">Candidati totali: ${x.all.length}</p>`;grid.appendChild(d)})}
+document.getElementById('export').onclick=()=>{let rows=D.gcps.filter(complete);if(rows.length===0){alert('Nessun GCP completo da esportare');return}let headers=['sheet_id','gcp_id','candidate_name','source_x','source_y','decision','target_easting_epsg25832','target_northing_epsg25832','target_tile','target_preview_x','target_preview_y','match_method','confidence','note'];let csv=headers.join(',')+'\n'+rows.map(r=>headers.map(h=>'"'+String(r[h]??'').replaceAll('"','""')+'"').join(',')).join('\n');let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='GCP_FINAL_VERIFIED.csv';a.click()};
+fetch('point_matching_v2_7.json').then(r=>{if(!r.ok)throw Error('JSON non trovato');return r.json()}).then(d=>{D=d;render()}).catch(e=>document.getElementById('summary').textContent='Errore: '+e.message);
+</script></body></html>
