@@ -1,0 +1,8 @@
+{
+  "project": "Forli Digital Twin",
+  "version": "3.2 Runtime Dashboard",
+  "generated_at": "2026-07-04T20:59:32.792035",
+  "runtime_status": "DASHBOARD_READY",
+  "entrypoint": "index.html",
+  "runtime_entrypoint": "00_RUNTIME/index.html"
+}
