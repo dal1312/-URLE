@@ -1,79 +1,23 @@
-# Forlì Digital Twin — Master v3.2 Runtime Dashboard
+# Forlì Digital Twin Operational v2.0
 
-## Avvio
+Pacchetto operativo generato dalla tavola del Catasto Gregoriano di Forlì.
 
-Metodo consigliato:
+## Immagine sorgente
+- File usato: `iipgggsrv.fcgi`
+- Dimensione originale rilevata: 8000 × 6383 px
 
-```bash
-python start_server.py
-```
+## Contenuto
+- `00_MASTER/` immagine master JPG/TIFF
+- `01_RESTAURO/` versione restaurata leggera
+- `02_WEB/` viewer HTML operativo
+- `03_GIS/geojson/` layer iniziali in coordinate pixel
+- `04_DATABASE/` CSV, SQLite e query SQL
+- `06_DOC/` documentazione operativa
 
-Oppure aprire:
+## Uso rapido
+Apri:
 
-```text
-index.html
-```
+`02_WEB/index.html`
 
-Dashboard:
-
-```text
-00_RUNTIME/index.html
-```
-
-
-
----
-
-# Forlì Digital Twin
-
-Digital Twin storico-temporale della citta di Forli.
-
-Il progetto integra cartografia storica, Catasto Gregoriano, fogli catastali storici, CTR moderna EPSG:25832, workbench GCP, modello temporale, pipeline GIS, viewer web, manifest e inventario dei dati.
-
-## Stato corrente
-
-Il progetto e consolidato nel Master v3.2 operativo.
-
-Completato:
-- inventario generale;
-- CTR moderna georeferenziata;
-- mosaico virtuale VRT;
-- workbench GCP corretto;
-- schema temporale;
-- struttura web GIS;
-- pipeline tecnica;
-- script rapido di controllo GCP.
-
-Da completare:
-- matching reale dei GCP;
-- esportazione GCP_FINAL_VERIFIED.csv;
-- GeoTIFF storici finali;
-- vettorializzazione;
-- database storico popolato;
-- rilascio web finale.
-
-## CRS operativo
-
-EPSG:25832 - ETRS89 UTM zone 32N.
-
-## Avvio workbench
-
-Da terminale entrare nella cartella 08_WEB_APP e avviare un server locale Python sulla porta 8000.
-
-Poi aprire il browser sulla porta 8000.
-
-## Controllo GCP
-
-Da root repository eseguire lo script 13_PIPELINE/scripts/check_gcp_status.py.
-
-## Pipeline finale
-
-Seguire 13_PIPELINE/PIPELINE_FINAL_COMPLETION.md.
-
-## Piano operativo
-
-Seguire 13_PIPELINE/NEXT_STEPS_v3_2.md.
-
-## Repository
-
-https://github.com/dal1312/-URLE
+## Nota scientifica
+I layer sono in coordinate pixel e sono preliminari. Il passaggio successivo è georeferenziare la carta e trasformare i layer in EPSG:25832 o EPSG:32633.
