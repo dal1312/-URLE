@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Forlì Digital Twin — Viewer Finale v3.2</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+body { margin:0; font-family: system-ui, Arial; background:#f5f0e6; }
+#map { height: 100vh; }
+.controls { position:absolute; top:10px; right:10px; z-index:1000; background:white; padding:10px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.2); }
+</style>
+</head>
+<body>
+<div id="map"></div>
+<div class="controls">
+  <h4>Forlì Digital Twin</h4>
+  <label><input type="checkbox" checked> Mura</label><br>
+  <label><input type="checkbox" checked> Strade</label><br>
+  <label><input type="checkbox" checked> Edifici</label><br>
+  <label><input type="checkbox"> Chiese / Conventi</label><br>
+  <label><input type="checkbox"> Palazzi / Torri</label><br>
+  <hr>
+  <label>Anno: <input type="range" min="1300" max="1800" step="50" value="1500" id="year"> <span id="year-val">1500</span></label>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const map = L.map('map').setView([44.222, 12.041], 14);
+
+// Base map moderno
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '&copy; OpenStreetMap'
+}).addTo(map);
+
+// Placeholder layer storico (da sostituire con GeoJSON reali)
+const historicalLayer = L.geoJSON(null, {
+  style: { color: '#8B4513', weight: 2, fillOpacity: 0.3 }
+}).addTo(map);
+
+// Esempio di feature placeholder
+historicalLayer.addData({
+  "type": "Feature",
+  "properties": { "name": "Mura storiche", "year_start": 1300, "year_end": 1800 },
+  "geometry": { "type": "Polygon", "coordinates": [[[12.03,44.21],[12.05,44.21],[12.05,44.23],[12.03,44.23]]] }
+});
+
+// Controlli anno
+document.getElementById('year').oninput = function() {
+  document.getElementById('year-val').innerText = this.value;
+  // Qui in futuro: filtra layer per anno
+};
+
+console.log('%c[Viewer] Forlì Digital Twin Viewer Finale caricato', 'color:#2a231a');
+</script>
+</body>
+</html>
