@@ -1,8 +1,10 @@
 {
   "project": "Forli Digital Twin",
-  "version": "3.2 Runtime Dashboard",
+  "version": "3.3 Ciuccio Upgrade",
   "crs": "EPSG:25832",
   "repository": "https://github.com/dal1312/-URLE",
+  "upgrade_author": "Dott. Ing. Massimo Valtieri (Ciuccio)",
+  "upgrade_date": "2026-07-17",
   "modules": [
     {
       "id": "CTR",
@@ -23,21 +25,21 @@
       "name": "Matching GCP",
       "status": "REVIEW_REQUIRED",
       "progress": 35,
-      "note": "32 candidati, target reali da verificare"
+      "note": "32 candidati, target reali da verificare manualmente nel workbench"
     },
     {
       "id": "GEOTIFF",
       "name": "GeoTIFF storici finali",
       "status": "MISSING",
       "progress": 0,
-      "note": "dipende da GCP_FINAL_VERIFIED.csv"
+      "note": "dipende da GCP_FINAL_VERIFIED.csv (≥8 KEEP per foglio)"
     },
     {
       "id": "VECTOR",
       "name": "Vettorializzazione",
       "status": "MISSING",
       "progress": 0,
-      "note": "mura, strade, edifici, particelle"
+      "note": "mura, strade, edifici, particelle — post GeoTIFF"
     },
     {
       "id": "TEMPORAL",
@@ -48,10 +50,17 @@
     },
     {
       "id": "WEB",
-      "name": "Viewer web",
+      "name": "Viewer web + Workbench",
       "status": "GENERATED",
-      "progress": 55,
-      "note": "workbench e dashboard presenti"
+      "progress": 70,
+      "note": "workbench v3.2 + pipeline v3.3 pronti"
+    },
+    {
+      "id": "PIPELINE",
+      "name": "Pipeline automatizzata",
+      "status": "GENERATED",
+      "progress": 100,
+      "note": "script v3.0 + Makefile + run_full_pipeline.sh aggiornati da Ciuccio"
     },
     {
       "id": "RELEASE",
@@ -62,11 +71,18 @@
     }
   ],
   "next_steps": [
-    "Aprire 00_RUNTIME/index.html",
-    "Usare il link al GCP/Web Workbench",
-    "Compilare GCP_FINAL_VERIFIED.csv",
-    "Eseguire build_gdal_commands.py",
-    "Produrre GeoTIFF finali",
-    "Avviare vettorializzazione"
+    "Aprire 08_WEB_APP/workbench_v3_2.html",
+    "Completare matching GCP (minimo 8 KEEP per foglio)",
+    "Eseguire: make structure && make export-gcp",
+    "Eseguire: make geotiff-cmds && bash 13_PIPELINE/scripts/gdal_georef_final_commands.sh",
+    "Oppure: make pipeline",
+    "Procedere con vettorializzazione e database temporale"
+  ],
+  "ciuccio_notes": [
+    "Tutti gli script della pipeline sono stati hardening a v3.0",
+    "Struttura 11_FINAL_OUTPUT creata",
+    "Documentazione completa in docs/",
+    "Makefile avanzato disponibile",
+    "Il collo di bottiglia rimane esclusivamente il matching manuale dei GCP"
   ]
 }
