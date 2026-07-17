@@ -1,44 +1,83 @@
 #!/usr/bin/env python3
-from pathlib import Path
+"""
+promote_verified_gcps.py v3.0 — Ciuccio Upgrade
+Forlì Digital Twin — Master v3.3
+
+Promuove i GCP con decision=KEEP e coordinate complete
+dal CSV di matching (o dal JSON) verso GCP_FINAL_VERIFIED.csv.
+Esegue anche un controllo minimo di completezza per foglio.
+"""
+
 import csv
+import sys
+from pathlib import Path
+from collections import defaultdict
+from datetime import datetime
 
-root = Path(__file__).resolve().parents[2]
-src = root / "04_GCP_GEOREF/GCP_point_matching_v2_7.csv"
-out = root / "04_GCP_GEOREF/GCP_FINAL_VERIFIED.csv"
+ROOT = Path(__file__).resolve().parents[2]
+SRC_CSV = ROOT / "04_GCP_GEOREF" / "GCP_point_matching_v2_7.csv"
+OUT_CSV = ROOT / "04_GCP_GEOREF" / "GCP_FINAL_VERIFIED.csv"
+MIN_PER_SHEET = 8
+EXPECTED_SHEETS = ["FO004_042", "FO004_043", "FO004_044", "FO004_045"]
 
-with src.open(encoding="utf-8-sig", newline="") as f:
-    rows = list(csv.DictReader(f))
-    fields = f.fieldnames
 
-valid = []
-for row in rows:
-    if row.get("decision") != "KEEP":
-        continue
-    if not row.get("target_easting_epsg25832") or not row.get("target_northing_epsg25832"):
-        continue
-    if not row.get("target_tile"):
-        continue
-    valid.append(row)
+def main():
+    if not SRC_CSV.exists():
+        print(f"[ERRORE] File sorgente mancante: {SRC_CSV}")
+        sys.exit(1)
 
-by_sheet = {}
-for row in valid:
-    by_sheet.setdefault(row["sheet_id"], []).append(row)
+    with SRC_CSV.open(encoding="utf-8-sig", newline="") as f:
+        reader = csv.DictReader(f)
+        fields = reader.fieldnames
+        rows = list(reader)
 
-expected = ["FO004_042", "FO004_043", "FO004_044", "FO004_045"]
-not_ready = [sheet for sheet in expected if len(by_sheet.get(sheet, [])) < 8]
+    valid = []
+    for row in rows:
+        if row.get("decision") != "KEEP":
+            continue
+        if not row.get("target_easting_epsg25832") or not row.get("target_northing_epsg25832"):
+            continue
+        if not row.get("target_tile"):
+            continue
+        valid.append(row)
 
-for sheet in expected:
-    print(sheet, "verified=", len(by_sheet.get(sheet, [])))
+    by_sheet = defaultdict(list)
+    for row in valid:
+        by_sheet[row["sheet_id"]].append(row)
 
-if not_ready:
-    print("NOT READY:", ", ".join(not_ready))
-    print("GCP_FINAL_VERIFIED.csv not generated")
-    raise SystemExit(2)
+    print("=" * 60)
+    print("PROMOTE VERIFIED GCPs v3.0")
+    print("=" * 60)
+    print(f"Timestamp: {datetime.now().isoformat(timespec='seconds')}")
+    print()
 
-with out.open("w", encoding="utf-8", newline="") as f:
-    writer = csv.DictWriter(f, fieldnames=fields)
-    writer.writeheader()
-    writer.writerows(valid)
+    not_ready = []
+    for sheet in EXPECTED_SHEETS:
+        count = len(by_sheet.get(sheet, []))
+        status = "OK" if count >= MIN_PER_SHEET else "INSUFFICIENTE"
+        print(f"  {sheet}: {count:2d} GCP  [{status}]")
+        if count < MIN_PER_SHEET:
+            not_ready.append(sheet)
 
-print("Generated:", out.relative_to(root))
-print("Verified rows:", len(valid))
+    if not_ready:
+        print()
+        print(f"[ERRORE] Fogli non pronti (minimo {MIN_PER_SHEET} GCP KEEP): {', '.join(not_ready)}")
+        print("         Completa il matching nel workbench prima di promuovere.")
+        sys.exit(2)
+
+    OUT_CSV.parent.mkdir(parents=True, exist_ok=True)
+    with OUT_CSV.open("w", encoding="utf-8-sig", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=fields, extrasaction="ignore")
+        writer.writeheader()
+        writer.writerows(valid)
+
+    print()
+    print(f"[OK] Generato: {OUT_CSV.relative_to(ROOT)}")
+    print(f"     Righe verificate: {len(valid)}")
+    print()
+    print("[PROSSIMO] Esegui:")
+    print("    python 13_PIPELINE/scripts/build_gdal_commands.py")
+
+
+if __name__ == "__main__":
+    main()
