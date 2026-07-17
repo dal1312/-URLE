@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Forlì Digital Twin — Viewer Mappe Georeferenziate v3.3</title>
+
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Proj4 + Proj4Leaflet for EPSG:25832 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.9.0/proj4.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4leaflet/1.0.2/proj4leaflet.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #efe6d7;
+      --panel: #fff8eb;
+      --ink: #2a231a;
+      --muted: #6b5b46;
+      --accent: #8B4513;
+      --line: #c6aa7e;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+    }
+    header {
+      height: 56px;
+      background: #ddc8a6;
+      border-bottom: 1px solid #b89b6d;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      gap: 12px;
+    }
+    header h1 {
+      font-size: 17px;
+      margin: 0;
+      font-weight: 700;
+    }
+    header .sub {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    #map {
+      height: calc(100vh - 56px);
+      width: 100%;
+    }
+    .leaflet-control-layers {
+      border-radius: 10px !important;
+      border: 1px solid var(--line) !important;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.12) !important;
+    }
+    .info-panel {
+      position: absolute;
+      bottom: 24px;
+      left: 12px;
+      z-index: 1000;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 12px;
+      max-width: 320px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+    }
+    .info-panel b { color: var(--accent); }
+    .coords {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 11px;
+      margin-top: 4px;
+      color: var(--muted);
+    }
+    .badge {
+      display: inline-block;
+      background: #e8d9b8;
+      color: var(--ink);
+      border-radius: 999px;
+      padding: 1px 8px;
+      font-size: 11px;
+      margin-right: 4px;
+    }
+    a.btn {
+      display: inline-block;
+      background: #fff3dc;
+      border: 1px solid #b89b6d;
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 12px;
+      color: var(--ink);
+      text-decoration: none;
+      margin-left: 6px;
+    }
+    a.btn:hover { background: white; }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Forlì Digital Twin — Viewer Georeferenziato v3.3</h1>
+      <div class="sub">EPSG:25832 · Raster storici FO004 + CTR moderna · Ciuccio Upgrade</div>
+    </div>
+    <div>
+      <a class="btn" href="workbench_v3_2.html">Workbench GCP</a>
+      <a class="btn" href="readiness.html">Readiness</a>
+    </div>
+  </header>
+
+  <div id="map"></div>
+
+  <div class="info-panel">
+    <div><span class="badge">v3.3</span> <b>Stato</b>: Viewer pronto</div>
+    <div style="margin-top:6px">
+      I GeoTIFF finali appariranno qui non appena generati dalla pipeline
+      (<code>11_FINAL_OUTPUT/geotiff_final/</code>).
+    </div>
+    <div class="coords" id="coords">EPSG:25832 → muovi il mouse sulla mappa</div>
+  </div>
+
+  <script>
+    // ============================================================
+    // Definizione EPSG:25832 (ETRS89 / UTM zone 32N)
+    // ============================================================
+    proj4.defs("EPSG:25832", "+proj=utm +zone=32 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs");
+    const crs25832 = new L.Proj.CRS("EPSG:25832",
+      "+proj=utm +zone=32 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs",
+      {
+        resolutions: [
+          8192, 4096, 2048, 1024, 512, 256, 128, 64, 32, 16, 8, 4, 2, 1, 0.5, 0.25
+        ],
+        origin: [-20037508.34, 20037508.34]
+      }
+    );
+
+    // Centro approssimativo di Forlì in EPSG:25832
+    // (derivato dai bounds dei tasselli CTR presenti nel progetto)
+    const CENTER_25832 = [742000, 4902000]; // easting, northing
+    const CENTER_WGS84 = [44.2227, 12.0407]; // lat, lon per base map
+
+    // ============================================================
+    // Mappa principale (WGS84 per compatibilità tile OSM)
+    // ============================================================
+    const map = L.map("map", {
+      center: CENTER_WGS84,
+      zoom: 14,
+      zoomControl: true
+    });
+
+    // Base layers
+    const osm = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    }).addTo(map);
+
+    const cartoLight = L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap, &copy; CARTO'
+    });
+
+    const esriSat = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
+      maxZoom: 19,
+      attribution: "Tiles &copy; Esri"
+    });
+
+    // ============================================================
+    // Bounds approssimativi dei 4 fogli storici (derivati dai tile CTR)
+    // Questi verranno sostituiti dai bounds reali dei GeoTIFF finali
+    // ============================================================
+    // Dai bounds dei tile CTR (EPSG:25832) convertiti approssimativamente
+    const sheetBounds = {
+      "FO004_042": [[44.215, 12.020], [44.235, 12.050]], // SW, NE in WGS84 (approx)
+      "FO004_043": [[44.205, 12.025], [44.225, 12.055]],
+      "FO004_044": [[44.220, 12.030], [44.240, 12.060]],
+      "FO004_045": [[44.210, 12.035], [44.230, 12.065]]
+    };
+
+    // Placeholder image overlays (useranno le preview storiche se disponibili)
+    // In produzione sostituire con GeoTIFF serviti via GeoServer / COG / tiles
+    const historicalLayers = {};
+    const historicalGroup = L.layerGroup();
+
+    // Funzione per creare overlay da immagine + bounds
+    function addHistoricalOverlay(sheetId, imageUrl, bounds) {
+      const overlay = L.imageOverlay(imageUrl, bounds, {
+        opacity: 0.75,
+        interactive: false,
+        attribution: "Catasto Gregoriano FO004 — Forlì Digital Twin"
+      });
+      historicalLayers[sheetId] = overlay;
+      return overlay;
+    }
+
+    // Tentativo di caricamento delle preview storiche (se presenti)
+    // Path relativi rispetto a 08_WEB_APP/
+    const historicalPreviews = {
+      "FO004_042": "img/historical/CT_FO004_042_enhanced.jpg",
+      "FO004_043": "img/historical/01CT_FO004_043_enhanced.jpg",
+      "FO004_044": "img/historical/CT_FO004_044_enhanced.jpg",
+      "FO004_045": "img/historical/CT_FO004_045_enhanced.jpg"
+    };
+
+    Object.keys(sheetBounds).forEach(sheetId => {
+      const url = historicalPreviews[sheetId];
+      const bounds = sheetBounds[sheetId];
+      // Creiamo l'overlay anche se l'immagine non esiste ancora (fallback silenzioso)
+      const layer = addHistoricalOverlay(sheetId, url, bounds);
+      // Non li aggiungiamo tutti di default per non sovrapporre troppo
+    });
+
+    // ============================================================
+    // Layer di controllo
+    // ============================================================
+    const baseMaps = {
+      "OpenStreetMap": osm,
+      "Carto Light": cartoLight,
+      "Esri Satellite": esriSat
+    };
+
+    const overlayMaps = {
+      "FO004_042 (storico)": historicalLayers["FO004_042"] || L.layerGroup(),
+      "FO004_043 (storico)": historicalLayers["FO004_043"] || L.layerGroup(),
+      "FO004_044 (storico)": historicalLayers["FO004_044"] || L.layerGroup(),
+      "FO004_045 (storico)": historicalLayers["FO004_045"] || L.layerGroup()
+    };
+
+    L.control.layers(baseMaps, overlayMaps, {
+      collapsed: false,
+      position: "topright"
+    }).addTo(map);
+
+    // Aggiungiamo di default i due fogli centrali se esistono
+    if (historicalLayers["FO004_043"]) historicalLayers["FO004_043"].addTo(map);
+    if (historicalLayers["FO004_044"]) historicalLayers["FO004_044"].addTo(map);
+
+    // ============================================================
+    // Coordinate display (EPSG:25832 + WGS84)
+    // ============================================================
+    const coordsEl = document.getElementById("coords");
+    map.on("mousemove", function (e) {
+      const lat = e.latlng.lat.toFixed(6);
+      const lon = e.latlng.lng.toFixed(6);
+      // Conversione approssimata WGS84 → EPSG:25832 (per display)
+      try {
+        const [easting, northing] = proj4("EPSG:4326", "EPSG:25832", [lon, lat]);
+        coordsEl.innerHTML =
+          `WGS84: ${lat}, ${lon}<br>` +
+          `EPSG:25832: E ${easting.toFixed(2)}  N ${northing.toFixed(2)}`;
+      } catch (err) {
+        coordsEl.textContent = `WGS84: ${lat}, ${lon}`;
+      }
+    });
+
+    // ============================================================
+    // Marker centro Forlì + scala
+    // ============================================================
+    L.marker(CENTER_WGS84).addTo(map)
+      .bindPopup("<b>Forlì</b><br>Centro approssimativo Digital Twin")
+      .openPopup();
+
+    L.control.scale({ imperial: false, metric: true }).addTo(map);
+
+    // ============================================================
+    // Nota tecnica in console
+    // ============================================================
+    console.log("%c[Viewer Georef v3.3] Forlì Digital Twin — Ciuccio Upgrade", "color:#8B4513;font-weight:bold");
+    console.log("Quando i GeoTIFF finali saranno disponibili in 11_FINAL_OUTPUT/geotiff_final/");
+    console.log("sostituire gli imageOverlay con servizi tile (GeoServer / COG / XYZ) o usare leaflet-geotiff.");
+  </script>
+</body>
+</html>
